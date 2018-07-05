@@ -1,0 +1,23 @@
+﻿<Window x:Class="AppGui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AppGui"
+        mc:Ignorable="d"
+        Title="Global Offensive Control App" Height="292" Width="471">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="271*"/>
+            <ColumnDefinition Width="192*"/>
+        </Grid.ColumnDefinitions>
+        <Image HorizontalAlignment ="Center" VerticalAlignment="Top" Source="maxresdefault.png" Margin="0,1,0,0" Width="463" Height="268" Opacity="0.5" ClipToBounds="True" Grid.ColumnSpan="2"/>
+
+        <Button Content="" HorizontalAlignment="Left" Height="46" Margin="10,10,0,0" VerticalAlignment="Top" Width="46" IsDefault="True">
+            <Button.Background>
+                <ImageBrush ImageSource="csgo-logo.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+
+    </Grid>
+</Window>
