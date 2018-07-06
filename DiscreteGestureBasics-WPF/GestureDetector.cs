@@ -29,7 +29,8 @@
         private LifeCycleEvents lce;
         private MmiCommunication mmic;
 
-        public int hysterisis;
+        private int hysterisis;
+
 
 
         public GestureDetector(KinectSensor kinectSensor, GestureResultView gestureResultView)
@@ -41,6 +42,8 @@
             mmic = new MmiCommunication("localhost", 8000, "User1", "GESTURES"); // MmiCommunication(string IMhost, int portIM, string UserOD, string thisModalityName)
             mmic.Send(lce.NewContextRequest());
 
+
+            
 
             if (kinectSensor == null)
             {
@@ -197,13 +200,14 @@
 
                     if (discreteResults != null)
                     {
-                        //Console.WriteLine(" Discrete Result found...");
+                        
                     }
                     if (continuousResults != null)
                     {
 
                         foreach (Gesture gesture in vgbFrameSource.Gestures)
                         {
+                            
                             if (gesture.Name.Equals(this.crouch_gesture) ||
                                 gesture.Name.Equals(this.dab_gesture) ||
                                 gesture.Name.Equals(this.hey_gesture) ||
@@ -217,12 +221,27 @@
                                     if (result != null)
                                     {
                                         level = result.Progress;
-                                        if (level >= 1)
+                                        if (level >= 0.8)
                                         {
+                                            hysterisis++;
+                                            if (hysterisis != 20)
+                                            {
+                                                return;
+                                            }
+                                            hysterisis = 0;
                                             
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_crouch.Opacity = 0.0;
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_dab.Opacity = 0.0;
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_hey.Opacity = 0.0;
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_hold.Opacity = 0.0;
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_reload.Opacity = 0.0;
+                                            ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_normal.Opacity = 0.0;
+
+
+
                                             if (gesture.Name.Equals(crouch_gesture))
                                             {
-                                                sendMessage("CROUCH", level);
+                                                sre_GestureRecognized(level, "CROUCH");
                                                 Console.WriteLine(" CROUCH ");
                                                 isGestureDetected = true;
                                                 iscrouched = true;
@@ -230,16 +249,18 @@
                                                 isheying = false;
                                                 isholding = false;
                                                 isreloading = false;
+                                                // Never do this, use MVVM, only used this because there's no time left
+
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).current_gesture.Text = "Crouch";
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_crouch.Opacity = 0.5;
+
+
                                             }
                                             else if (gesture.Name.Equals(dab_gesture))
                                             {
 
-                                                if (hysterisis != 15)
-                                                {
-                                                    return;
-                                                }
-                                                hysterisis = 0;
-                                                sendMessage("DAB", level);
+                                               
+                                                sre_GestureRecognized(level, "DAB");
                                                 Console.WriteLine(" DAB ");
                                                 isGestureDetected = true;
                                                 iscrouched = false;
@@ -247,14 +268,15 @@
                                                 isheying = false;
                                                 isholding = false;
                                                 isreloading = false;
-                                                hysterisis++;
-                                                
+
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).current_gesture.Text = "Dab";
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_dab.Opacity = 0.5;
 
 
                                             }
                                             else if (gesture.Name.Equals(hey_gesture))
                                             {
-                                                sendMessage("HEY", level);
+                                                sre_GestureRecognized(level, "HEY");
                                                 Console.WriteLine(" HEY ");
                                                 isGestureDetected = true;
                                                 iscrouched = false;
@@ -262,10 +284,14 @@
                                                 isheying = false;
                                                 isholding = false;
                                                 isreloading = false;
+
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).current_gesture.Text = "Hey";
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_hey.Opacity = 0.5;
+
                                             }
                                             else if (gesture.Name.Equals(hold_gesture))
                                             {
-                                                sendMessage("HOLD", level);
+                                                sre_GestureRecognized(level, "HOLD");
                                                 Console.WriteLine(" HOLD ");
                                                 isGestureDetected = true;
                                                 iscrouched = false;
@@ -273,10 +299,14 @@
                                                 isheying = false;
                                                 isholding = false;
                                                 isreloading = false;
+
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).current_gesture.Text = "Hold";
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_hold.Opacity = 0.5;
+
                                             }
                                             else if (gesture.Name.Equals(reload_gesture))
                                             {
-                                                sendMessage("RELOAD", level);
+                                                sre_GestureRecognized(level,"RELOAD");
                                                 Console.WriteLine(" RELOAD ");
                                                 isGestureDetected = true;
                                                 iscrouched = false;
@@ -284,24 +314,31 @@
                                                 isheying = false;
                                                 isholding = false;
                                                 isreloading = false;
-                                            }
 
-                                        }
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).current_gesture.Text = "Reload";
+                                                ((MainWindow)System.Windows.Application.Current.MainWindow).overlay_reload.Opacity = 0.5;
+
+                                            }
+                                            
+
+                                        } 
                                     }
                                 }
-                            }
+                            }                            
                         }
-                        GestureResultView.UpdateGestureResult(true, isGestureDetected, iscrouched, isdabbing,
-                                                                isheying, isholding, isreloading, level);
+                        GestureResultView.UpdateGestureResult(true, isGestureDetected, iscrouched, isdabbing,isheying, isholding, isreloading, level);                       
                     }
+                    
                 }
+                
             }
+
         }
 
        
 
         // Send JSON message indicating the parameters in use
-        private void sendMessage(string gesture, double confidence)
+        private void sre_GestureRecognized(double confidence, string gesture)
         {
             string json = "{ \"recognized\": [";
             json += "\"" + confidence + "\", ";

@@ -241,6 +241,7 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
                     {
                         ImageSource = ReloadImage;
                     }
+                    
                 }
                 else
                 {

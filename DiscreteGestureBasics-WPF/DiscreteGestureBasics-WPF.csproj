@@ -155,6 +155,7 @@
     <Content Include="Database\Seated.gbd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Images\overlay_green.png" />
     <Resource Include="Images\crouch_image.png" />
     <Resource Include="Images\dab_image.png" />
     <Resource Include="Images\hey_image.png" />

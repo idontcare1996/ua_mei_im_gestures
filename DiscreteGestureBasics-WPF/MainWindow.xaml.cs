@@ -72,7 +72,8 @@
             // create a gesture detector for each body (6 bodies => 6 detectors) and create content controls to display results in the UI
             int col0Row = 0;
             int col1Row = 0;
-            int maxBodies = this.kinectSensor.BodyFrameSource.BodyCount;
+            int maxBodies = this.kinectSensor.BodyFrameSource.BodyCount;            
+
             for (int i = 0; i < maxBodies; ++i)
             {
                 GestureResultView result = new GestureResultView(i, false, false, 0.0f);
@@ -82,7 +83,10 @@
                 // split gesture results across the first two columns of the content grid
                 ContentControl contentControl = new ContentControl();
                 contentControl.Content = this.gestureDetectorList[i].GestureResultView;
-                
+
+               
+
+
                 if (i % 2 == 0)
                 {
                     // Gesture results for bodies: 0, 2, 4
@@ -127,6 +131,7 @@
                     if (this.PropertyChanged != null)
                     {
                         this.PropertyChanged(this, new PropertyChangedEventArgs("StatusText"));
+                        overlay_normal.Opacity = 0;
                     }
                 }
             }
