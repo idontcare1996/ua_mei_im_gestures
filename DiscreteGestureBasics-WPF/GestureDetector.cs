@@ -1,41 +1,45 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="GestureDetector.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
+﻿namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
 {
     using System;
     using System.Collections.Generic;
     using Microsoft.Kinect;
     using Microsoft.Kinect.VisualGestureBuilder;
+    using mmisharp;
 
-    /// <summary>
-    /// Gesture Detector class which listens for VisualGestureBuilderFrame events from the service
-    /// and updates the associated GestureResultView object with the latest results for the 'Seated' gesture
-    /// </summary>
     public class GestureDetector : IDisposable
     {
+                
         /// <summary> Path to the gesture database that was trained with VGB </summary>
-        private readonly string gestureDatabase = @"Database\Seated.gbd";
+        private readonly string gestureDatabase = @"Database\Gestures.gbd";
 
         /// <summary> Name of the discrete gesture in the database that we want to track </summary>
-        private readonly string seatedGestureName = "Seated";
+        private readonly string crouch_gesture = "CrouchContinuous";
+        private readonly string dab_gesture = "Dab";
+        private readonly string hey_gesture = "Hey_Right";
+        private readonly string hold_gesture = "Hold_Right";
+        private readonly string reload_gesture = "Reload_Right";
+        
 
         /// <summary> Gesture frame source which should be tied to a body tracking ID </summary>
         private VisualGestureBuilderFrameSource vgbFrameSource = null;
 
         /// <summary> Gesture frame reader which will handle gesture events coming from the sensor </summary>
-        private VisualGestureBuilderFrameReader vgbFrameReader = null;
+        private VisualGestureBuilderFrameReader vgbFrameReader = null;        
 
-        /// <summary>
-        /// Initializes a new instance of the GestureDetector class along with the gesture frame source and reader
-        /// </summary>
-        /// <param name="kinectSensor">Active sensor to initialize the VisualGestureBuilderFrameSource object with</param>
-        /// <param name="gestureResultView">GestureResultView object to store gesture results of a single body to</param>
+        private LifeCycleEvents lce;
+        private MmiCommunication mmic;
+
+
         public GestureDetector(KinectSensor kinectSensor, GestureResultView gestureResultView)
         {
+
+            //init LifeCycleEvents..
+            lce = new LifeCycleEvents("GESTURES", "FUSION", "gestures-1", "acoustic", "command"); // LifeCycleEvents(string source, string target, string id, string medium, string mode)
+            //mmic = new MmiCommunication("localhost",9876,"User1", "ASR");  //PORT TO FUSION - uncomment this line to work with fusion later
+            mmic = new MmiCommunication("localhost", 8000, "User1", "GESTURES"); // MmiCommunication(string IMhost, int portIM, string UserOD, string thisModalityName)
+            mmic.Send(lce.NewContextRequest());
+
+
             if (kinectSensor == null)
             {
                 throw new ArgumentNullException("kinectSensor");
@@ -67,7 +71,11 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
                 // but for this program, we only want to track one discrete gesture from the database, so we'll load it by name
                 foreach (Gesture gesture in database.AvailableGestures)
                 {
-                    if (gesture.Name.Equals(this.seatedGestureName))
+                    if (gesture.Name.Equals(this.crouch_gesture) ||
+                        gesture.Name.Equals(this.dab_gesture) ||
+                        gesture.Name.Equals(this.hey_gesture) ||
+                        gesture.Name.Equals(this.hold_gesture) ||
+                        gesture.Name.Equals(this.reload_gesture))
                     {
                         this.vgbFrameSource.AddGesture(gesture);
                     }
@@ -161,30 +169,105 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
             VisualGestureBuilderFrameReference frameReference = e.FrameReference;
             using (VisualGestureBuilderFrame frame = frameReference.AcquireFrame())
             {
+
+                bool iscrouched = false;
+                bool isdabbing = false;
+                bool isholding = false;
+                bool isheying = false;
+                bool isreloading = false;
+
                 if (frame != null)
                 {
                     // get the discrete gesture results which arrived with the latest frame
                     IReadOnlyDictionary<Gesture, DiscreteGestureResult> discreteResults = frame.DiscreteGestureResults;
+                    IReadOnlyDictionary<Gesture, ContinuousGestureResult> continuousResults = frame.ContinuousGestureResults;
 
                     if (discreteResults != null)
                     {
-                        // we only have one gesture in this source object, but you can get multiple gestures
-                        foreach (Gesture gesture in this.vgbFrameSource.Gestures)
+                        Console.WriteLine(" Discrete Result found...");
+                    }
+                    if (continuousResults != null)
+                    {
+                        foreach (Gesture gesture in vgbFrameSource.Gestures)
                         {
-                            if (gesture.Name.Equals(this.seatedGestureName) && gesture.GestureType == GestureType.Discrete)
+                            if (gesture.Name.Equals(stop) || gesture.Name.Equals(back) || gesture.Name.Equals(skip)
+                                || gesture.Name.Equals(vdown) || gesture.Name.Equals(vup))
                             {
-                                DiscreteGestureResult result = null;
-                                discreteResults.TryGetValue(gesture, out result);
+                                ContinuousGestureResult result = null;
+                                continuousResults.TryGetValue(gesture, out result);
 
                                 if (result != null)
                                 {
-                                    // update the GestureResultView object with new gesture result values
-                                    this.GestureResultView.UpdateGestureResult(true, result.Detected, result.Confidence);
+                                    progress = result.Progress;
+                                    if (progress >= 1)
+                                    {
+                                        count++;
+                                        if (count != 15)
+                                        {
+                                            return;
+                                        }
+                                        count = 0;
+                                        if (gesture.Name.Equals(stop))
+                                        {
+                                            sendMessage("PAUSE", progress);
+                                            anyGestureDetected = true;
+                                            stopDetected = true;
+                                            skipDetected = false;
+                                            backDetected = false;
+                                            vupDetected = false;
+                                            vdownDetected = false;
+                                        }
+                                        else if (gesture.Name.Equals(skip))
+                                        {
+                                            sendMessage("BACK", progress);
+                                            anyGestureDetected = true;
+                                            stopDetected = false;
+                                            skipDetected = true;
+                                            backDetected = false;
+                                            vupDetected = false;
+                                            vdownDetected = false;
+                                        }
+                                        else if (gesture.Name.Equals(back))
+                                        {
+                                            sendMessage("SKIP", progress);
+                                            anyGestureDetected = true;
+                                            stopDetected = false;
+                                            skipDetected = false;
+                                            backDetected = true;
+                                            vupDetected = false;
+                                            vdownDetected = false;
+                                        }
+                                        else if (gesture.Name.Equals(vup))
+                                        {
+                                            sendMessage("VUP", progress);
+                                            anyGestureDetected = true;
+                                            stopDetected = false;
+                                            skipDetected = false;
+                                            backDetected = false;
+                                            vupDetected = true;
+                                            vdownDetected = false;
+                                        }
+                                        else if (gesture.Name.Equals(vdown))
+                                        {
+                                            sendMessage("VDOWN", progress);
+                                            anyGestureDetected = true;
+                                            stopDetected = false;
+                                            skipDetected = false;
+                                            backDetected = false;
+                                            vupDetected = false;
+                                            vdownDetected = true;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                    GestureResultView.UpdateGestureResult(true, anyGestureDetected, stopDetected, skipDetected,
+                                                            backDetected, vupDetected, vdownDetected, progress);
                 }
+            }
+        }
+    }
             }
         }
 
