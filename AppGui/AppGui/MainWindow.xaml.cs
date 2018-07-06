@@ -12,6 +12,7 @@ using WindowsInput;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace AppGui
 {
@@ -34,13 +35,20 @@ namespace AppGui
         public int total_kills;
         public int total_deaths;
         public int spectators;
-
+        public int atual_round;
+        public int round_counter;
     }
     static class Prices
     {
         public const int ak47 = 2700;
         public const int awp = 4750;
         public const int deagle = 700;
+        public const int defuse = 400;
+        public const int kelvar_cap = 1000;
+        public const int p250 = 300;
+        public const int mp7 = 1500;
+        public const int ump45 = 1200;
+
 
     }
     
@@ -53,7 +61,7 @@ namespace AppGui
         public Gamestate gamestate = new Gamestate();
         
 
-       
+      
         public MainWindow()
         {
             InitializeComponent();
@@ -65,6 +73,8 @@ namespace AppGui
             }
             
             gamestate.money = 800;
+            gamestate.round_counter = 0;
+            
             Console.WriteLine("Listening... n\n");
             
             //t.Speak("Por favor, espere um pouco enquanto tentamos conectar...");
@@ -76,6 +86,7 @@ namespace AppGui
        
         void OnNewGameState(GameState gs)
         {
+            
             if (!gamestate.IsPlanted &&
                gs.Round.Phase == RoundPhase.Live &&
                gs.Round.Bomb == BombState.Planted &&
@@ -89,6 +100,8 @@ namespace AppGui
             {
                 gamestate.IsPlanted = false;
             }
+            
+            
             gamestate.money = gs.Player.State.Money;
             gamestate.round_number = gs.Map.Round;
             gamestate.bullets = gs.Player.Weapons.ActiveWeapon.AmmoClip;
@@ -99,7 +112,30 @@ namespace AppGui
             gamestate.total_kills = gs.Player.MatchStats.Kills;
             gamestate.total_deaths = gs.Player.MatchStats.Deaths;
             gamestate.spectators = gs.Map.CurrentSpectators;
+            
+            if (gamestate.round_counter < gamestate.round_number)
+            {
+                Thread.Sleep(17000);
+                gamestate.round_counter = gamestate.round_number;
+                if (gamestate.armour <= 70)
+                {                   
+                    t.Speak("Aconselho-te a comprar um capacete");
+                }
 
+                if (gamestate.money >= 4500)
+                {
+                    t.Speak("Podes comprar um kit...");
+                }
+            }
+            
+            if (gamestate.armour <= 70 && gamestate.money >= 1000 && gamestate.round_counter < gamestate.round_number)
+            {
+                gamestate.round_counter = gamestate.round_number;
+                Thread.Sleep(17000);
+                t.Speak("Aconselho-te a comprar um capacete");
+
+            }
+          
 
         }
        
@@ -248,7 +284,37 @@ namespace AppGui
                                                         {
                                                             t.Speak(" Uma AWP custa " + Prices.awp + " dólares");
                                                             break;
-                                                        }                                                    
+                                                        }
+                                                    // DEFUSE
+                                                    case "DEFUSE":
+                                                        {
+                                                            t.Speak(" O Defuse custa " + Prices.defuse + " dólares");
+                                                            break;
+                                                        }
+                                                    // COLETE CAPACETE
+                                                    case "KELVAR_CAP":
+                                                        {
+                                                            t.Speak(" O Colete e o capacete custa " + Prices.kelvar_cap + " dólares");
+                                                            break;
+                                                        }
+                                                    // P250
+                                                    case "P250":
+                                                        {
+                                                            t.Speak(" Uma P250 custa " + Prices.p250 + " dólares");
+                                                            break;
+                                                        }
+                                                    // MP7
+                                                    case "MP7":
+                                                        {
+                                                            t.Speak(" Uma MP7 custa " + Prices.mp7 + " dólares");
+                                                            break;
+                                                        }
+                                                    // UMP45
+                                                    case "UMP45":
+                                                        {
+                                                            t.Speak(" Uma UMP45 custa " + Prices.ump45 + " dólares");
+                                                            break;
+                                                        }
                                                 }
                                                 break;
                                             }
@@ -282,6 +348,51 @@ namespace AppGui
                                                                 t.Speak(" Faltam-te " + (Prices.awp - gamestate.money) + " dólares");
                                                             else
                                                                 t.Speak(" Consegues comprar uma A W P e sobrar " + (gamestate.money - Prices.awp) + " dólares.");
+                                                            break;
+                                                        }
+                                                    // DEFUSE
+                                                    case "DEFUSE":
+                                                        {
+                                                            if (gamestate.money < Prices.defuse)
+                                                                t.Speak(" Faltam-te " + (Prices.defuse - gamestate.money) + " dólares");
+                                                            else
+                                                                t.Speak(" Consegues comprar o Defuse e sobrar " + (gamestate.money - Prices.defuse) + " dólares.");
+                                                            break;
+                                                        }
+                                                    // COLETE CAPACETE
+                                                    case "KELVAR_CAP":
+                                                        {
+                                                            if (gamestate.money < Prices.kelvar_cap)
+                                                                t.Speak(" Faltam-te " + (Prices.kelvar_cap - gamestate.money) + " dólares");
+                                                            else
+                                                                t.Speak(" Consegues comprar o Colete e capacete e sobrar " + (gamestate.money - Prices.kelvar_cap) + " dólares.");
+                                                            break;
+                                                        }
+                                                    // P250
+                                                    case "P250":
+                                                        {
+                                                            if (gamestate.money < Prices.p250)
+                                                                t.Speak(" Faltam-te " + (Prices.p250 - gamestate.money) + " dólares");
+                                                            else
+                                                                t.Speak(" Consegues comprar uma P250 e sobrar " + (gamestate.money - Prices.p250) + " dólares.");
+                                                            break;
+                                                        }
+                                                    // MP7
+                                                    case "MP7":
+                                                        {
+                                                            if (gamestate.money < Prices.mp7)
+                                                                t.Speak(" Faltam-te " + (Prices.mp7 - gamestate.money) + " dólares");
+                                                            else
+                                                                t.Speak(" Consegues comprar uma M P 7 e sobrar " + (gamestate.money - Prices.mp7) + " dólares.");
+                                                            break;
+                                                        }
+                                                    // UMP45
+                                                    case "UMP45":
+                                                        {
+                                                            if (gamestate.money < Prices.ump45)
+                                                                t.Speak(" Faltam-te " + (Prices.ump45 - gamestate.money) + " dólares");
+                                                            else
+                                                                t.Speak(" Consegues comprar uma U M P 45 e sobrar " + (gamestate.money - Prices.ump45) + " dólares.");
                                                             break;
                                                         }
                                                 }
@@ -362,6 +473,51 @@ namespace AppGui
                                                                     t.Speak(" Tens dinehiro para comprar uma AWP e sobrar " + (gamestate.money - Prices.awp) + " dólares.");
                                                                 break;
                                                             }
+                                                        // DEFUSE
+                                                        case "DEFUSE":
+                                                            {
+                                                                if (gamestate.money < Prices.defuse)
+                                                                    t.Speak("Não, faltam-te " + (Prices.defuse - gamestate.money) + " dólares");
+                                                                else
+                                                                    t.Speak(" Tens dinehiro para comprar o Defuse e sobrar " + (gamestate.money - Prices.defuse) + " dólares.");
+                                                                break;
+                                                            }
+                                                         // COLETE CAPACETE
+                                                        case "KELVAR_CAP":
+                                                            {
+                                                                if (gamestate.money < Prices.kelvar_cap)
+                                                                    t.Speak("Não, faltam-te " + (Prices.kelvar_cap - gamestate.money) + " dólares");
+                                                                else
+                                                                    t.Speak(" Tens dinehiro para comprar o Colete e Capacete e sobrar " + (gamestate.money - Prices.kelvar_cap) + " dólares.");
+                                                                break;
+                                                            }
+                                                        // P250
+                                                        case "P250":
+                                                            {
+                                                                if (gamestate.money < Prices.p250)
+                                                                    t.Speak("Não, faltam-te " + (Prices.p250 - gamestate.money) + " dólares");
+                                                                else
+                                                                    t.Speak(" Tens dinehiro para comprar uma P250 e sobrar " + (gamestate.money - Prices.p250) + " dólares.");
+                                                                break;
+                                                            }
+                                                        // MP7
+                                                        case "MP7":
+                                                            {
+                                                                if (gamestate.money < Prices.mp7)
+                                                                    t.Speak("Não, faltam-te " + (Prices.mp7 - gamestate.money) + " dólares");
+                                                                else
+                                                                    t.Speak(" Tens dinehiro para comprar uma M P 7 e sobrar " + (gamestate.money - Prices.mp7) + " dólares.");
+                                                                break;
+                                                            }
+                                                        // UMP45
+                                                        case "UMP45":
+                                                            {
+                                                                if (gamestate.money < Prices.ump45)
+                                                                    t.Speak("Não, faltam-te " + (Prices.ump45 - gamestate.money) + " dólares");
+                                                                else
+                                                                    t.Speak(" Tens dinehiro para comprar uma U M P 45 e sobrar " + (gamestate.money - Prices.ump45) + " dólares.");
+                                                                break;
+                                                            }
                                                     }
                                                     break;
                                                 }
@@ -396,7 +552,12 @@ namespace AppGui
                                         if (gamestate.money < Prices.deagle)
                                             t.Speak(" Não consigo, faltam-te " + (Prices.deagle - gamestate.money) + " dólares");
                                         else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_8 ( Tecla 8 do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_8);
+
                                             t.Speak(" Compraste uma Deagle e sobraram " + (gamestate.money - Prices.deagle) + " dólares.");
+                                        }
                                         break;
                                     }
                                 // AWP
@@ -405,7 +566,82 @@ namespace AppGui
                                         if (gamestate.money < Prices.awp)
                                             t.Speak("Não consigo, faltam-te " + (Prices.awp - gamestate.money) + " dólares");
                                         else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_7 ( Tecla 7 do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_7);
+
                                             t.Speak(" Compraste uma A W P e sobraram " + (gamestate.money - Prices.awp) + " dólares.");
+                                        }
+                                        break;
+                                    }
+                                // DEFUSE
+                                case "DEFUSE":
+                                    {
+                                        if (gamestate.money < Prices.defuse)
+                                            t.Speak("Não consigo, faltam-te " + (Prices.defuse- gamestate.money) + " dólares");
+                                        else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_9 ( Tecla 9 do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_9);
+
+                                            t.Speak(" Compraste o Defuse e sobraram " + (gamestate.money - Prices.defuse) + " dólares.");
+                                        }
+                                        break;
+                                    }
+                                // COLETE CAPACETE
+                                case "KELVAR_CAP":
+                                    {
+                                        if (gamestate.money < Prices.kelvar_cap)
+                                            t.Speak("Não consigo, faltam-te " + (Prices.kelvar_cap - gamestate.money) + " dólares");
+                                        else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_0 ( Tecla 0 do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_0);
+
+                                            t.Speak(" Compraste o Colete e capacete e sobraram " + (gamestate.money - Prices.kelvar_cap) + " dólares.");
+                                        }
+                                        break;
+                                    }
+                                // P250
+                                case "P250":
+                                    {
+                                        if (gamestate.money < Prices.p250)
+                                            t.Speak("Não consigo, faltam-te " + (Prices.p250 - gamestate.money) + " dólares");
+                                        else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_P ( Tecla P do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_P);
+
+                                            t.Speak(" Compraste uma P250 e sobraram " + (gamestate.money - Prices.p250) + " dólares.");
+                                        }
+                                        break;
+                                    }
+                                // MP7
+                                case "MP7":
+                                    {
+                                        if (gamestate.money < Prices.mp7)
+                                            t.Speak("Não consigo, faltam-te " + (Prices.mp7 - gamestate.money) + " dólares");
+                                        else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_H ( Tecla H do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_H);
+
+                                            t.Speak(" Compraste uma M P 7 e sobraram " + (gamestate.money - Prices.mp7) + " dólares.");
+                                        }
+                                        break;
+                                    }
+                                // UMP45
+                                case "UMP45":
+                                    {
+                                        if (gamestate.money < Prices.ump45)
+                                            t.Speak("Não consigo, faltam-te " + (Prices.ump45 - gamestate.money) + " dólares");
+                                        else
+                                        {
+                                            // CÓDIGO PARA DAR INPUT DA TECLA: VK_K ( Tecla K do teclado )
+                                            inputsim.Keyboard.KeyPress(VirtualKeyCode.VK_K);
+
+                                            t.Speak(" Compraste uma U M P 45 e sobraram " + (gamestate.money - Prices.ump45) + " dólares.");
+                                        }
                                         break;
                                     }
                             }

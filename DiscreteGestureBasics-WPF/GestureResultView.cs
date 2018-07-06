@@ -19,13 +19,15 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
     public sealed class GestureResultView : INotifyPropertyChanged
     {
         /// <summary> Image to show when the 'detected' property is true for a tracked body </summary>
-        private readonly ImageSource seatedImage = new BitmapImage(new Uri(@"Images\Seated.png", UriKind.Relative));
+        private readonly ImageSource CrouchImage = new BitmapImage(new Uri(@"Images\crouch_image.png", UriKind.Relative));
+        private readonly ImageSource DabImage = new BitmapImage(new Uri(@"Images\dab_image.png", UriKind.Relative));
+        private readonly ImageSource HeyImage = new BitmapImage(new Uri(@"Images\hey_image.png", UriKind.Relative));
+        private readonly ImageSource HoldImage = new BitmapImage(new Uri(@"Images\hold_image.png", UriKind.Relative));
+        private readonly ImageSource ReloadImage = new BitmapImage(new Uri(@"Images\reload.png", UriKind.Relative));
 
-        /// <summary> Image to show when the 'detected' property is false for a tracked body </summary>
-        private readonly ImageSource notSeatedImage = new BitmapImage(new Uri(@"Images\NotSeated.png", UriKind.Relative));
-
-        /// <summary> Image to show when the body associated with the GestureResultView object is not being tracked </summary>
         private readonly ImageSource notTrackedImage = new BitmapImage(new Uri(@"Images\NotTracked.png", UriKind.Relative));
+        private readonly ImageSource notDetectedImage = new BitmapImage(new Uri(@"Images\NotTracked.png", UriKind.Relative));
+
 
         /// <summary> Array of brush colors to use for a tracked body; array position corresponds to the body colors used in the KinectBodyView class </summary>
         private readonly Brush[] trackedColors = new Brush[] { Brushes.Red, Brushes.Orange, Brushes.Green, Brushes.Blue, Brushes.Indigo, Brushes.Violet };
@@ -195,7 +197,11 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
         /// <param name="isBodyTrackingIdValid">True, if the body associated with the GestureResultView object is still being tracked</param>
         /// <param name="isGestureDetected">True, if the discrete gesture is currently detected for the associated body</param>
         /// <param name="detectionConfidence">Confidence value for detection of the discrete gesture</param>
-        public void UpdateGestureResult(bool isBodyTrackingIdValid, bool isGestureDetected, bool isGestureDetected2, bool isGestureDetected3, bool isGestureDetected4, bool isGestureDetected5, bool isGestureDetected6, float detectionConfidence)
+        public void UpdateGestureResult(bool isBodyTrackingIdValid,
+            bool isGestureDetected, bool iscrouched,
+            bool isdabbing, bool isheying,
+            bool isholding, bool isreloading,
+            float detectionConfidence)
         {
             this.IsTracked = isBodyTrackingIdValid;
             this.Confidence = 0.0f;
@@ -211,14 +217,34 @@ namespace Microsoft.Samples.Kinect.DiscreteGestureBasics
                 this.Detected = isGestureDetected;
                 this.BodyColor = this.trackedColors[this.BodyIndex];
 
-                if (this.Detected)
+                if (Detected)
                 {
-                    this.Confidence = detectionConfidence;
-                    this.ImageSource = this.seatedImage;
+                    Confidence = detectionConfidence;
+                    if (iscrouched)
+                    {
+                        ImageSource = CrouchImage;
+                    }
+                    else if (isdabbing)
+                    {
+                        ImageSource = DabImage;
+                    }
+                    else if (isheying)
+                    {
+                        ImageSource = HeyImage;
+                    }
+                    else if (isholding)
+                    {
+                        ImageSource = HoldImage;
+                    }
+                    
+                    else if (isreloading)
+                    {
+                        ImageSource = ReloadImage;
+                    }
                 }
                 else
                 {
-                    this.ImageSource = this.notSeatedImage;
+                    ImageSource = notDetectedImage;
                 }
             }
         }

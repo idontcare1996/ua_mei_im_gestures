@@ -4,62 +4,60 @@
         xmlns:local="clr-namespace:Microsoft.Samples.Kinect.DiscreteGestureBasics"
         Title="Discrete Gesture Basics"
         Height="650" Width="750"
-        Closing="MainWindow_Closing">
+        Closing="MainWindow_Closing"
+        Background="DarkGray">
+    
     <Window.Resources>
         <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e" />
         <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f" />
         <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2" />
-        
+
         <DataTemplate DataType="{x:Type local:GestureResultView}">
-            <Grid Width="Auto" Margin="5" Background="{Binding BodyColor}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock HorizontalAlignment="Stretch" Text="{Binding BodyIndex, StringFormat='Body Index: {0}'}" FontSize="14" FontFamily="Segoe UI" FontWeight="SemiBold" Margin="5"/>
-                <Image Source="{Binding ImageSource}" Stretch="Uniform" Grid.Row="1" Margin="5"/>
-                <TextBlock Text="{Binding Detected, StringFormat='Seated: {0}'}" FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Grid.Row="2" Margin="5 5 0 0"/>
-                <TextBlock Text="{Binding Confidence, StringFormat='Confidence: {0}'}" FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Grid.Row="3" Margin="5 0 0 0"/>
-            </Grid>
+
         </DataTemplate>
-        
+
     </Window.Resources>
-    
-    <Grid Margin="10 0 10 0">
+
+
+
+    <Grid x:Name="contentGrid" Margin="0,0,0,0" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Image Grid.Row="0" Source="Images\Logo.png" HorizontalAlignment="Left" Stretch="Fill" Height="32" Width="81" Margin="0 10 0 5" />
-        <TextBlock Grid.Row="0" Margin="0 0 -1 0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18">Discrete Gesture Basics</TextBlock>
-        <Image Grid.Row="0" Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5" />
 
-        <Grid x:Name="contentGrid" Grid.Row="1" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Vertical" Grid.Column="2" Grid.RowSpan="3" Margin="20 10 0 10" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Viewbox x:Name="kinectBodyViewbox">
-                    <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
-                </Viewbox>
-                <TextBlock Text="This program can track up to 6 people simultaneously. Stand in front of the sensor to get tracked. Sit down to trigger the 'Seated' gesture." TextWrapping="Wrap" Margin="5 10 5 5" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="14"/>
-            </StackPanel>
-        </Grid>
+        <Image Source="Images/normal.png" Width="210"  Height="210" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" OpacityMask="#FFE01E1E"/>
+        <Label Content="Normal" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
+        
+        <Image Source="Images/crouch_image.png"  Width="210"  Height="210" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label Content="Crouch" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
 
-        <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
-            <StatusBarItem Content="{Binding StatusText}" />
-        </StatusBar>
+        <Image Source="Images/dab_image.png"  Width="210"  Height="210" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label Content="Dab" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
+
+        <Image Source="Images/hey_image.png"  Width="210"  Height="210" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label Content="Hey" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
+
+        <Image Source="Images/hold_image.png" Width="210"  Height="210" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label Content="Hold" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
+        
+        <Image Source="Images/reload_image.png" Width="210"  Height="210" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label Content="Reload" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin =" 0 16 0 0" FontSize="20" Background="#7FFFFFFF"/>
+
+        <TextBlock x:Name="current_gesture" Text="Current Gesture" FontFamily="Segoe UI" FontSize="24" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock Text="Gestures" FontFamily="Segoe UI" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Viewbox Grid.Row="0" Grid.Column="1" x:Name="kinectBodyViewbox">
+            <Image Source="{Binding ImageSource}" />
+        </Viewbox>
+        
+
     </Grid>
 </Window>

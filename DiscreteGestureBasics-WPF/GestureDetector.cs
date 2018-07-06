@@ -2,8 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.Kinect;
-    using Microsoft.Kinect.VisualGestureBuilder;
+    using Microsoft.Kinect;    
+    using Microsoft.Kinect.VisualGestureBuilder;    
     using mmisharp;
 
     public class GestureDetector : IDisposable
@@ -28,6 +28,8 @@
 
         private LifeCycleEvents lce;
         private MmiCommunication mmic;
+
+        public int hysterisis;
 
 
         public GestureDetector(KinectSensor kinectSensor, GestureResultView gestureResultView)
@@ -81,6 +83,13 @@
                     }
                 }
             }
+        }
+
+        // Handle the TrackingIdLost event for the VisualGestureBuilderSource object
+        private void Source_TrackingIdLost(object sender, TrackingIdLostEventArgs e)
+        {
+            // Update the GestureResultView object to show the 'Not Tracked' image in the UI
+            GestureResultView.UpdateGestureResult(false, false, false, false, false, false, false, 0.0f);
         }
 
         /// <summary> Gets the GestureResultView object which stores the detector results for display in the UI </summary>
@@ -164,17 +173,21 @@
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
+        /// 
+
         private void Reader_GestureFrameArrived(object sender, VisualGestureBuilderFrameArrivedEventArgs e)
         {
             VisualGestureBuilderFrameReference frameReference = e.FrameReference;
             using (VisualGestureBuilderFrame frame = frameReference.AcquireFrame())
             {
-
+                bool isGestureDetected = false;
                 bool iscrouched = false;
                 bool isdabbing = false;
-                bool isholding = false;
                 bool isheying = false;
+                bool isholding = false;                
                 bool isreloading = false;
+
+                float level = 0;
 
                 if (frame != null)
                 {
@@ -184,102 +197,124 @@
 
                     if (discreteResults != null)
                     {
-                        Console.WriteLine(" Discrete Result found...");
+                        //Console.WriteLine(" Discrete Result found...");
                     }
                     if (continuousResults != null)
                     {
+
                         foreach (Gesture gesture in vgbFrameSource.Gestures)
                         {
-                            if (gesture.Name.Equals(stop) || gesture.Name.Equals(back) || gesture.Name.Equals(skip)
-                                || gesture.Name.Equals(vdown) || gesture.Name.Equals(vup))
+                            if (gesture.Name.Equals(this.crouch_gesture) ||
+                                gesture.Name.Equals(this.dab_gesture) ||
+                                gesture.Name.Equals(this.hey_gesture) ||
+                                gesture.Name.Equals(this.hold_gesture) ||
+                                gesture.Name.Equals(this.reload_gesture))
                             {
-                                ContinuousGestureResult result = null;
-                                continuousResults.TryGetValue(gesture, out result);
-
-                                if (result != null)
                                 {
-                                    progress = result.Progress;
-                                    if (progress >= 1)
+                                    ContinuousGestureResult result = null;
+                                    continuousResults.TryGetValue(gesture, out result);
+
+                                    if (result != null)
                                     {
-                                        count++;
-                                        if (count != 15)
+                                        level = result.Progress;
+                                        if (level >= 1)
                                         {
-                                            return;
-                                        }
-                                        count = 0;
-                                        if (gesture.Name.Equals(stop))
-                                        {
-                                            sendMessage("PAUSE", progress);
-                                            anyGestureDetected = true;
-                                            stopDetected = true;
-                                            skipDetected = false;
-                                            backDetected = false;
-                                            vupDetected = false;
-                                            vdownDetected = false;
-                                        }
-                                        else if (gesture.Name.Equals(skip))
-                                        {
-                                            sendMessage("BACK", progress);
-                                            anyGestureDetected = true;
-                                            stopDetected = false;
-                                            skipDetected = true;
-                                            backDetected = false;
-                                            vupDetected = false;
-                                            vdownDetected = false;
-                                        }
-                                        else if (gesture.Name.Equals(back))
-                                        {
-                                            sendMessage("SKIP", progress);
-                                            anyGestureDetected = true;
-                                            stopDetected = false;
-                                            skipDetected = false;
-                                            backDetected = true;
-                                            vupDetected = false;
-                                            vdownDetected = false;
-                                        }
-                                        else if (gesture.Name.Equals(vup))
-                                        {
-                                            sendMessage("VUP", progress);
-                                            anyGestureDetected = true;
-                                            stopDetected = false;
-                                            skipDetected = false;
-                                            backDetected = false;
-                                            vupDetected = true;
-                                            vdownDetected = false;
-                                        }
-                                        else if (gesture.Name.Equals(vdown))
-                                        {
-                                            sendMessage("VDOWN", progress);
-                                            anyGestureDetected = true;
-                                            stopDetected = false;
-                                            skipDetected = false;
-                                            backDetected = false;
-                                            vupDetected = false;
-                                            vdownDetected = true;
+                                            
+                                            if (gesture.Name.Equals(crouch_gesture))
+                                            {
+                                                sendMessage("CROUCH", level);
+                                                Console.WriteLine(" CROUCH ");
+                                                isGestureDetected = true;
+                                                iscrouched = true;
+                                                isdabbing = false;
+                                                isheying = false;
+                                                isholding = false;
+                                                isreloading = false;
+                                            }
+                                            else if (gesture.Name.Equals(dab_gesture))
+                                            {
+
+                                                if (hysterisis != 15)
+                                                {
+                                                    return;
+                                                }
+                                                hysterisis = 0;
+                                                sendMessage("DAB", level);
+                                                Console.WriteLine(" DAB ");
+                                                isGestureDetected = true;
+                                                iscrouched = false;
+                                                isdabbing = true;
+                                                isheying = false;
+                                                isholding = false;
+                                                isreloading = false;
+                                                hysterisis++;
+                                                
+
+
+                                            }
+                                            else if (gesture.Name.Equals(hey_gesture))
+                                            {
+                                                sendMessage("HEY", level);
+                                                Console.WriteLine(" HEY ");
+                                                isGestureDetected = true;
+                                                iscrouched = false;
+                                                isdabbing = true;
+                                                isheying = false;
+                                                isholding = false;
+                                                isreloading = false;
+                                            }
+                                            else if (gesture.Name.Equals(hold_gesture))
+                                            {
+                                                sendMessage("HOLD", level);
+                                                Console.WriteLine(" HOLD ");
+                                                isGestureDetected = true;
+                                                iscrouched = false;
+                                                isdabbing = true;
+                                                isheying = false;
+                                                isholding = false;
+                                                isreloading = false;
+                                            }
+                                            else if (gesture.Name.Equals(reload_gesture))
+                                            {
+                                                sendMessage("RELOAD", level);
+                                                Console.WriteLine(" RELOAD ");
+                                                isGestureDetected = true;
+                                                iscrouched = false;
+                                                isdabbing = true;
+                                                isheying = false;
+                                                isholding = false;
+                                                isreloading = false;
+                                            }
+
                                         }
                                     }
                                 }
                             }
                         }
+                        GestureResultView.UpdateGestureResult(true, isGestureDetected, iscrouched, isdabbing,
+                                                                isheying, isholding, isreloading, level);
                     }
-                    GestureResultView.UpdateGestureResult(true, anyGestureDetected, stopDetected, skipDetected,
-                                                            backDetected, vupDetected, vdownDetected, progress);
                 }
             }
         }
-    }
-            }
-        }
 
-        /// <summary>
-        /// Handles the TrackingIdLost event for the VisualGestureBuilderSource object
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void Source_TrackingIdLost(object sender, TrackingIdLostEventArgs e)
+       
+
+        // Send JSON message indicating the parameters in use
+        private void sendMessage(string gesture, double confidence)
         {
-            // update the GestureResultView object to show the 'Not Tracked' image in the UI
-            this.GestureResultView.UpdateGestureResult(false, false, 0.0f);
+            string json = "{ \"recognized\": [";
+            json += "\"" + confidence + "\", ";
+            json += "\"" + gesture + "\", ";
+            // Just using the first two comands. The rest is EMP
+            for (int i = 0; i < 8; i++)
+            {
+                json += "\"" + "EMP" + "\", ";
+            }
+            json = json.Substring(0, json.Length - 2);
+            json += "] }";
+            var exNot = lce.ExtensionNotification("", "", 1, json);
+            mmic.Send(exNot);
         }
     }
 }
